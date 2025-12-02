@@ -4,13 +4,9 @@ import com.gitlab.rmarzec.framework.base.BaseTest;
 import com.gitlab.rmarzec.framework.pages.YouTubeHomePage;
 import com.gitlab.rmarzec.framework.pages.YouTubeSearchResultsPage;
 import com.gitlab.rmarzec.framework.pages.YouTubeShortsPage;
-import com.gitlab.rmarzec.framework.utils.DriverFactory;
 import com.gitlab.rmarzec.framework.model.YTTile;
-import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
 import java.util.List;
 
 
