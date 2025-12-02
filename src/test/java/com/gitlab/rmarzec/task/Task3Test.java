@@ -6,6 +6,8 @@ import com.gitlab.rmarzec.framework.pages.W3SchoolsPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Map;
+
 public class Task3Test extends BaseTest {
 
     @Test
@@ -21,6 +23,7 @@ public class Task3Test extends BaseTest {
         String currentUrl = w3SchoolsPage.getCurrentUrl();
 
         if (!currentUrl.equals(expectedUrl)) {
+            w3SchoolsPage.printCurrentUrl();
             w3SchoolsPage.open();
         }
 
@@ -32,9 +35,10 @@ public class Task3Test extends BaseTest {
 
         String modelInput = "Opel";
         w3SchoolsPage.selectCarByVisibleText(modelInput);
-        w3SchoolsPage.clickSubmit();
-        String selectedValue = w3SchoolsPage.getSelectedOptionValue();
-        System.out.println(modelInput + "," + selectedValue);
-        Assert.assertEquals(selectedValue, "opel", "The selected value should be ‘opel’");
+        Map<String, String> selectedOption = w3SchoolsPage.getSelectedOption();
+        System.out.println(selectedOption.get("text") + "," + selectedOption.get("value"));
+
+        Assert.assertEquals(selectedOption.get("value"), "opel", "The selected value should be 'opel'");
+
     }
 }

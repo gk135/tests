@@ -22,7 +22,7 @@ public class Task2Test extends BaseTest {
 
         System.out.println("List of available languages:");
 
-        languages.forEach(language -> {
+        for (WebElement language : languages) {
             String name = wikipediaPage.getLanguageName(language);
 
             if ("English".equals(name)) {
@@ -30,6 +30,6 @@ public class Task2Test extends BaseTest {
             } else {
                 System.out.println(name);
             }
-        });
+        }
     }
 }

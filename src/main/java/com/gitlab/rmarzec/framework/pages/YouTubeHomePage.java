@@ -1,6 +1,7 @@
 package com.gitlab.rmarzec.framework.pages;
 
 import com.gitlab.rmarzec.framework.utils.DriverFactory;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -15,7 +16,9 @@ public class YouTubeHomePage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    @FindBy(css = "button[aria-label*='Zaakceptuj wykorzystywanie plików cookie']")
+    private final By cookieOverlay = By.cssSelector("tp-yt-iron-overlay-backdrop.opened");
+
+    @FindBy(css = "ytd-consent-bump-v2-lightbox ytd-button-renderer:nth-of-type(2) button.yt-spec-button-shape-next--filled")
     private WebElement acceptCookiesButton;
 
     @FindBy(css = "a[title='Shorts']")
@@ -45,6 +48,8 @@ public class YouTubeHomePage {
         try {
             WebElement acceptButton = wait.until(ExpectedConditions.elementToBeClickable(acceptCookiesButton));
             acceptButton.click();
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(cookieOverlay));
+
         } catch (Exception ignored) {
         }
     }

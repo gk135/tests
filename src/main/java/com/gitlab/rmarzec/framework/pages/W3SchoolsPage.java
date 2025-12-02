@@ -11,10 +11,14 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class W3SchoolsPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
+
+    private final By cookieAcceptButton = By.cssSelector(".fast-cmp-home-accept button");
 
     @FindBy(id = "fast-cmp-iframe")
     private WebElement cookieFrame;
@@ -24,12 +28,6 @@ public class W3SchoolsPage {
 
     @FindBy(id = "cars")
     private WebElement carsDropdown;
-
-    @FindBy(css = "input[type='submit']")
-    private WebElement submitButton;
-
-    @FindBy(css = ".w3-container.w3-large.w3-border")
-    private WebElement resultDiv;
 
     @FindBy(css = "h1")
     private WebElement selectElementHeader;
@@ -53,14 +51,17 @@ public class W3SchoolsPage {
             wait.until(ExpectedConditions.visibilityOf(cookieFrame));
             driver.switchTo().frame(cookieFrame);
 
-            wait.until(ExpectedConditions.elementToBeClickable(
-                    By.cssSelector(".fast-cmp-home-accept button")
-            )).click();
+            wait.until(ExpectedConditions.elementToBeClickable(cookieAcceptButton)).click();
 
             driver.switchTo().defaultContent();
         } catch (Exception e) {
             driver.switchTo().defaultContent();
         }
+    }
+
+    public void printCurrentUrl() {
+        String currentUrl = driver.getCurrentUrl();
+        System.out.println("Actual address URL: " + currentUrl);
     }
 
     public void clickTryItButton() {
@@ -92,14 +93,17 @@ public class W3SchoolsPage {
         select.selectByVisibleText(carName);
     }
 
-    public void clickSubmit() {
-        wait.until(ExpectedConditions.elementToBeClickable(submitButton));
-        submitButton.click();
-    }
+    public Map<String, String> getSelectedOption() {
+        Select select = new Select(carsDropdown);
+        WebElement selectedOption = select.getFirstSelectedOption();
 
-    public String getSelectedOptionValue() {
-        wait.until(ExpectedConditions.visibilityOf(resultDiv));
-        String fullText = resultDiv.getText();
-        return fullText.split("=")[1].trim();
+        String selectedText = selectedOption.getText();
+        String selectedValue = selectedOption.getAttribute("value");
+
+        Map<String, String> result = new HashMap<>();
+        result.put("text", selectedText);
+        result.put("value", selectedValue);
+
+        return result;
     }
 }

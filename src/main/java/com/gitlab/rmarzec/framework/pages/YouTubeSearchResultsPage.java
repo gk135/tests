@@ -27,60 +27,62 @@ public class YouTubeSearchResultsPage {
     private final By badge = By.cssSelector(".yt-badge-shape--live");
     private final By timeElement = By.cssSelector("span#text.ytd-thumbnail-overlay-time-status-renderer, #time-status");
 
-    public List<YTTile> getFirst12Videos() {
-        List<YTTile> ytTileList = new ArrayList<>();
-        Set<String> addedHrefs = new HashSet<>();
+    public List<YTTile> loadVideoElements(int videoCount) {
+        Map<String, YTTile> validVideosMap = new LinkedHashMap<>();
 
         wait.until(ExpectedConditions.presenceOfElementLocated(videoRenderers));
 
-        loadEnoughVideos(30, 10);
+        while (validVideosMap.size() < videoCount) {
+            List<WebElement> allRenderers = driver.findElements(videoRenderers);
 
-        List<WebElement> videos = driver.findElements(videoRenderers);
+            for (WebElement video : allRenderers) {
+                if (validVideosMap.size() >= videoCount) break;
 
-        for (WebElement video : videos) {
-            if (ytTileList.size() >= 12) break;
-            WebElement titleEl = video.findElement(videoTitle);
-            String href = titleEl.getAttribute("href");
-            String title = titleEl.getAttribute("title");
+                try {
+                    WebElement titleEl = video.findElement(videoTitle);
+                    String href = titleEl.getAttribute("href");
 
-            if (href == null || !href.contains("/watch?v=") || addedHrefs.contains(href))
-                continue;
+                    if (href == null || !href.contains("/watch?v=")) {
+                        continue;
+                    }
 
-            String channel = extractChannel(video);
-            String length = extractLength(video);
+                    if (validVideosMap.containsKey(href)) {
+                        continue;
+                    }
 
-            ytTileList.add(new YTTile(title, channel, length));
-            addedHrefs.add(href);
-        }
+                    String title = titleEl.getAttribute("title");
+                    String channel = extractChannel(video);
+                    String length = extractLength(video);
 
-        return ytTileList;
-    }
-
-
-    private void loadEnoughVideos(int minCount, int maxScrolls) {
-        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(3));
-
-        for (int attempt = 0; attempt < maxScrolls; attempt++) {
-
-            List<WebElement> videos = driver.findElements(videoRenderers);
-
-            if (videos.size() >= minCount) {
-                return;
+                    validVideosMap.put(href, new YTTile(title, channel, length));
+                } catch (org.openqa.selenium.NoSuchElementException ignored) {
+                }
             }
 
-            WebElement last = videos.get(videos.size() - 1);
+            if (validVideosMap.size() >= videoCount) {
+                break;
+            }
+
+            int currentRendererCount = allRenderers.size();
+
+            WebElement last = allRenderers.get(allRenderers.size() - 1);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", last);
+            ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 500);");
 
             try {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", last);
-            } catch (Exception ignored) {
-            }
+                wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(videoRenderers, currentRendererCount));
+            } catch (TimeoutException e) {
+                ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.documentElement.scrollHeight);");
 
-            try {
-                shortWait.until(ExpectedConditions.numberOfElementsToBeMoreThan(videoRenderers, videos.size()));
-            } catch (Exception ignored) {
+                try {
+                    wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(videoRenderers, currentRendererCount));
+                } catch (TimeoutException ex) {
+                    break;
+                }
             }
         }
 
+        return new ArrayList<>(validVideosMap.values());
     }
 
     private String extractChannel(WebElement video) {
